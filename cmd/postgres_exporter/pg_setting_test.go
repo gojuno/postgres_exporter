@@ -25,7 +25,7 @@ var fixtures = []fixture{
 			unit: "seconds",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_seconds_fixture_metric_seconds\", help: \"Foo foo foo [Units converted to seconds.]\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_seconds_fixture_metric_seconds", help: "Foo foo foo [Units converted to seconds.]", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: 5,
 	},
 	{
@@ -41,7 +41,7 @@ var fixtures = []fixture{
 			unit: "seconds",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_milliseconds_fixture_metric_seconds\", help: \"Foo foo foo [Units converted to seconds.]\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_milliseconds_fixture_metric_seconds", help: "Foo foo foo [Units converted to seconds.]", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: 5,
 	},
 	{
@@ -57,7 +57,7 @@ var fixtures = []fixture{
 			unit: "bytes",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_eight_kb_fixture_metric_bytes\", help: \"Foo foo foo [Units converted to bytes.]\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_eight_kb_fixture_metric_bytes", help: "Foo foo foo [Units converted to bytes.]", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: 139264,
 	},
 	{
@@ -73,7 +73,7 @@ var fixtures = []fixture{
 			unit: "bytes",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_16_kb_real_fixture_metric_bytes\", help: \"Foo foo foo [Units converted to bytes.]\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_16_kb_real_fixture_metric_bytes", help: "Foo foo foo [Units converted to bytes.]", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: 49152,
 	},
 	{
@@ -89,7 +89,7 @@ var fixtures = []fixture{
 			unit: "bytes",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_16_mb_real_fixture_metric_bytes\", help: \"Foo foo foo [Units converted to bytes.]\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_16_mb_real_fixture_metric_bytes", help: "Foo foo foo [Units converted to bytes.]", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: 5.0331648e+07,
 	},
 	{
@@ -105,7 +105,7 @@ var fixtures = []fixture{
 			unit: "bytes",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_32_mb_real_fixture_metric_bytes\", help: \"Foo foo foo [Units converted to bytes.]\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_32_mb_real_fixture_metric_bytes", help: "Foo foo foo [Units converted to bytes.]", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: 1.00663296e+08,
 	},
 	{
@@ -121,7 +121,7 @@ var fixtures = []fixture{
 			unit: "bytes",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_64_mb_real_fixture_metric_bytes\", help: \"Foo foo foo [Units converted to bytes.]\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_64_mb_real_fixture_metric_bytes", help: "Foo foo foo [Units converted to bytes.]", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: 2.01326592e+08,
 	},
 	{
@@ -137,7 +137,7 @@ var fixtures = []fixture{
 			unit: "",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_bool_on_fixture_metric\", help: \"Foo foo foo\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_bool_on_fixture_metric", help: "Foo foo foo", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: 1,
 	},
 	{
@@ -153,7 +153,7 @@ var fixtures = []fixture{
 			unit: "",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_bool_off_fixture_metric\", help: \"Foo foo foo\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_bool_off_fixture_metric", help: "Foo foo foo", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: 0,
 	},
 	{
@@ -169,7 +169,7 @@ var fixtures = []fixture{
 			unit: "seconds",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_special_minus_one_value_seconds\", help: \"foo foo foo [Units converted to seconds.]\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_special_minus_one_value_seconds", help: "foo foo foo [Units converted to seconds.]", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: -1,
 	},
 	{
@@ -185,7 +185,7 @@ var fixtures = []fixture{
 			unit: "",
 			err:  "",
 		},
-		d: "Desc{fqName: \"pg_settings_rds_rds_superuser_reserved_connections\", help: \"Sets the number of connection slots reserved for rds_superusers.\", constLabels: {}, variableLabels: []}",
+		d: `Desc{fqName: "pg_settings_rds_rds_superuser_reserved_connections", help: "Sets the number of connection slots reserved for rds_superusers.", constLabels: {}, variableLabels: [` + serverLabelName + `]}`,
 		v: 2,
 	},
 	{
@@ -233,7 +233,7 @@ func (s *PgSettingSuite) TestMetric(c *C) {
 
 	for _, f := range fixtures {
 		d := &dto.Metric{}
-		m := f.p.metric()
+		m := f.p.metric("")
 		m.Write(d) // nolint: errcheck
 
 		c.Check(m.Desc().String(), Equals, f.d)
