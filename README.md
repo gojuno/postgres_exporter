@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/wrouesnel/postgres_exporter.svg?branch=master)](https://travis-ci.org/wrouesnel/postgres_exporter)
-[![Coverage Status](https://coveralls.io/repos/github/wrouesnel/postgres_exporter/badge.svg?branch=master)](https://coveralls.io/github/wrouesnel/postgres_exporter?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/wrouesnel/postgres_exporter)](https://goreportcard.com/report/github.com/wrouesnel/postgres_exporter)
+[![Build Status](https://travis-ci.org/gojuno/postgres_exporter.svg?branch=master)](https://travis-ci.org/gojuno/postgres_exporter)
+[![Coverage Status](https://coveralls.io/repos/github/gojuno/postgres_exporter/badge.svg?branch=master)](https://coveralls.io/github/gojuno/postgres_exporter?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gojuno/postgres_exporter)](https://goreportcard.com/report/github.com/gojuno/postgres_exporter)
 
 # PostgreSQL Server Exporter
 
