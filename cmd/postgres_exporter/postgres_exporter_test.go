@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/blang/semver"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // Hook up gocheck into the "go test" runner.
@@ -34,7 +35,7 @@ func (s *FunctionalSuite) TestSemanticVersionColumnDiscard(c *C) {
 
 	{
 		// No metrics should be eliminated
-		resultMap := makeDescMap(semver.MustParse("0.0.1"), testMetricMap)
+		resultMap := makeDescMap(semver.MustParse("0.0.1"), prometheus.Labels{}, testMetricMap)
 		c.Check(
 			resultMap["test_namespace"].columnMappings["metric_which_stays"].discard,
 			Equals,
@@ -55,7 +56,7 @@ func (s *FunctionalSuite) TestSemanticVersionColumnDiscard(c *C) {
 		testMetricMap["test_namespace"]["metric_which_discards"] = discardableMetric
 
 		// Discard metric should be discarded
-		resultMap := makeDescMap(semver.MustParse("0.0.1"), testMetricMap)
+		resultMap := makeDescMap(semver.MustParse("0.0.1"), prometheus.Labels{}, testMetricMap)
 		c.Check(
 			resultMap["test_namespace"].columnMappings["metric_which_stays"].discard,
 			Equals,
@@ -76,7 +77,7 @@ func (s *FunctionalSuite) TestSemanticVersionColumnDiscard(c *C) {
 		testMetricMap["test_namespace"]["metric_which_discards"] = discardableMetric
 
 		// Discard metric should be discarded
-		resultMap := makeDescMap(semver.MustParse("0.0.2"), testMetricMap)
+		resultMap := makeDescMap(semver.MustParse("0.0.2"), prometheus.Labels{}, testMetricMap)
 		c.Check(
 			resultMap["test_namespace"].columnMappings["metric_which_stays"].discard,
 			Equals,

@@ -33,7 +33,7 @@ func querySettings(ch chan<- prometheus.Metric, server *Server) error {
 			return fmt.Errorf("Error retrieving rows on %q: %s %v", server, namespace, err)
 		}
 
-		ch <- s.metric(server.String())
+		ch <- s.metric(server.labels)
 	}
 
 	return nil
@@ -45,7 +45,7 @@ type pgSetting struct {
 	name, setting, unit, shortDesc, vartype string
 }
 
-func (s *pgSetting) metric(server string) prometheus.Metric {
+func (s *pgSetting) metric(labels prometheus.Labels) prometheus.Metric {
 	var (
 		err       error
 		name      = strings.Replace(s.name, ".", "_", -1)
@@ -76,8 +76,8 @@ func (s *pgSetting) metric(server string) prometheus.Metric {
 		panic(fmt.Sprintf("Unsupported vartype %q", s.vartype))
 	}
 
-	desc := newDesc(subsystem, name, shortDesc)
-	return prometheus.MustNewConstMetric(desc, prometheus.GaugeValue, val, server)
+	desc := newDesc(subsystem, name, shortDesc, labels)
+	return prometheus.MustNewConstMetric(desc, prometheus.GaugeValue, val)
 }
 
 // TODO: fix linter override

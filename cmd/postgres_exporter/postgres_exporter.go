@@ -452,7 +452,7 @@ func addQueries(content []byte, pgVersion semver.Version, server *Server) error 
 	}
 
 	// Convert the loaded metric map into exporter representation
-	partialExporterMap := makeDescMap(pgVersion, metricMaps)
+	partialExporterMap := makeDescMap(pgVersion, server.labels, metricMaps)
 
 	// Merge the two maps (which are now quite flatteend)
 	for k, v := range partialExporterMap {
@@ -480,7 +480,7 @@ func addQueries(content []byte, pgVersion semver.Version, server *Server) error 
 }
 
 // Turn the MetricMap column mapping into a prometheus descriptor mapping.
-func makeDescMap(pgVersion semver.Version, metricMaps map[string]map[string]ColumnMapping) map[string]MetricMapNamespace {
+func makeDescMap(pgVersion semver.Version, serverLabels prometheus.Labels, metricMaps map[string]map[string]ColumnMapping) map[string]MetricMapNamespace {
 	var metricMap = make(map[string]MetricMapNamespace)
 
 	for namespace, mappings := range metricMaps {
@@ -488,7 +488,7 @@ func makeDescMap(pgVersion semver.Version, metricMaps map[string]map[string]Colu
 
 		// Get the constant labels.
 		// Server label must be added to each metric.
-		constLabels := []string{serverLabelName}
+		var constLabels []string
 		for columnName, columnMapping := range mappings {
 			if columnMapping.usage == LABEL {
 				constLabels = append(constLabels, columnName)
@@ -526,7 +526,7 @@ func makeDescMap(pgVersion semver.Version, metricMaps map[string]map[string]Colu
 			case COUNTER:
 				thisMap[columnName] = MetricMap{
 					vtype: prometheus.CounterValue,
-					desc:  prometheus.NewDesc(fmt.Sprintf("%s_%s", namespace, columnName), columnMapping.description, constLabels, nil),
+					desc:  prometheus.NewDesc(fmt.Sprintf("%s_%s", namespace, columnName), columnMapping.description, constLabels, serverLabels),
 					conversion: func(in interface{}) (float64, bool) {
 						return dbToFloat64(in)
 					},
@@ -534,7 +534,7 @@ func makeDescMap(pgVersion semver.Version, metricMaps map[string]map[string]Colu
 			case GAUGE:
 				thisMap[columnName] = MetricMap{
 					vtype: prometheus.GaugeValue,
-					desc:  prometheus.NewDesc(fmt.Sprintf("%s_%s", namespace, columnName), columnMapping.description, constLabels, nil),
+					desc:  prometheus.NewDesc(fmt.Sprintf("%s_%s", namespace, columnName), columnMapping.description, constLabels, serverLabels),
 					conversion: func(in interface{}) (float64, bool) {
 						return dbToFloat64(in)
 					},
@@ -542,7 +542,7 @@ func makeDescMap(pgVersion semver.Version, metricMaps map[string]map[string]Colu
 			case MAPPEDMETRIC:
 				thisMap[columnName] = MetricMap{
 					vtype: prometheus.GaugeValue,
-					desc:  prometheus.NewDesc(fmt.Sprintf("%s_%s", namespace, columnName), columnMapping.description, constLabels, nil),
+					desc:  prometheus.NewDesc(fmt.Sprintf("%s_%s", namespace, columnName), columnMapping.description, constLabels, serverLabels),
 					conversion: func(in interface{}) (float64, bool) {
 						text, ok := in.(string)
 						if !ok {
@@ -559,7 +559,7 @@ func makeDescMap(pgVersion semver.Version, metricMaps map[string]map[string]Colu
 			case DURATION:
 				thisMap[columnName] = MetricMap{
 					vtype: prometheus.GaugeValue,
-					desc:  prometheus.NewDesc(fmt.Sprintf("%s_%s_milliseconds", namespace, columnName), columnMapping.description, constLabels, nil),
+					desc:  prometheus.NewDesc(fmt.Sprintf("%s_%s_milliseconds", namespace, columnName), columnMapping.description, constLabels, serverLabels),
 					conversion: func(in interface{}) (float64, bool) {
 						var durationString string
 						switch t := in.(type) {
@@ -725,8 +725,8 @@ func parseDSN(dsn string) (*url.URL, error) {
 // Server describes a connection to Postgres.
 // Also it contains metrics map and query overrides.
 type Server struct {
-	db          *sql.DB
-	fingerprint string
+	db     *sql.DB
+	labels prometheus.Labels
 
 	// Last version used to calculate metric map. If mismatch on scrape,
 	// then maps are recalculated.
@@ -755,8 +755,10 @@ func NewServer(dsn string) (*Server, error) {
 	log.Infof("Established new database connection to %q.", fingerprint)
 
 	return &Server{
-		db:          db,
-		fingerprint: fingerprint,
+		db: db,
+		labels: prometheus.Labels{
+			serverLabelName: fingerprint,
+		},
 	}, nil
 }
 
@@ -784,7 +786,7 @@ func (s *Server) Ping() error {
 
 // String returns server's fingerprint.
 func (s *Server) String() string {
-	return s.fingerprint
+	return s.labels[serverLabelName]
 }
 
 // Scrape loads metrics.
@@ -976,10 +978,10 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	e.userQueriesError.Collect(ch)
 }
 
-func newDesc(subsystem, name, help string) *prometheus.Desc {
+func newDesc(subsystem, name, help string, labels prometheus.Labels) *prometheus.Desc {
 	return prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, subsystem, name),
-		help, []string{serverLabelName}, nil,
+		help, nil, labels,
 	)
 }
 
@@ -1040,9 +1042,8 @@ func queryNamespaceMapping(ch chan<- prometheus.Metric, server *Server, namespac
 
 		// Get the label values for this row.
 		labels := make([]string, len(mapping.labels))
-		labels[0] = server.String() // Server label must be added to each metric.
-		for idx := 1; idx < len(mapping.labels); idx++ {
-			labels[idx], _ = dbToString(columnData[columnIdx[mapping.labels[idx]]])
+		for idx, label := range mapping.labels {
+			labels[idx], _ = dbToString(columnData[columnIdx[label]])
 		}
 
 		// Loop over column names, and match to scan data. Unknown columns
@@ -1133,7 +1134,7 @@ func (e *Exporter) checkMapVersions(ch chan<- prometheus.Metric, server *Server)
 			server.metricMap = make(map[string]MetricMapNamespace)
 			server.queryOverrides = make(map[string]string)
 		} else {
-			server.metricMap = makeDescMap(semanticVersion, e.builtinMetricMaps)
+			server.metricMap = makeDescMap(semanticVersion, server.labels, e.builtinMetricMaps)
 			server.queryOverrides = makeQueryOverrideMap(semanticVersion, queryOverrides)
 		}
 
@@ -1166,10 +1167,10 @@ func (e *Exporter) checkMapVersions(ch chan<- prometheus.Metric, server *Server)
 
 	// Output the version as a special metric
 	versionDesc := prometheus.NewDesc(fmt.Sprintf("%s_%s", namespace, staticLabelName),
-		"Version string as reported by postgres", []string{serverLabelName, "version", "short_version"}, nil)
+		"Version string as reported by postgres", []string{"version", "short_version"}, server.labels)
 
 	ch <- prometheus.MustNewConstMetric(versionDesc,
-		prometheus.UntypedValue, 1, server.String(), versionString, semanticVersion.String())
+		prometheus.UntypedValue, 1, versionString, semanticVersion.String())
 	return nil
 }
 

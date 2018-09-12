@@ -121,9 +121,9 @@ For running it locally on a default Debian/Ubuntu install, this will work (trans
 
     sudo -u postgres DATA_SOURCE_NAME="user=postgres host=/var/run/postgresql/ sslmode=disable" postgres_exporter
 
-Also, you can set a list of sources to scrape different instances from the one exporter setup. Just define a string separated by comma.
+Also, you can set a list of sources to scrape different instances from the one exporter setup. Just define a comma separated string.
 
-    sudo -u postgres DATA_SOURCE_NAME="port=5432, port=6432" postgres_exporter
+    sudo -u postgres DATA_SOURCE_NAME="port=5432,port=6432" postgres_exporter
 
 See the [github.com/lib/pq](http://github.com/lib/pq) module for other ways to format the connection string.
 
@@ -155,7 +155,8 @@ flag. This removes all built-in metrics, and uses only metrics defined by querie
 
 ### Running as non-superuser
 
-To be able to collect metrics from pg_stat_activity and pg_stat_replication as non-superuser you have to create views as a superuser, and assign permissions separately to those.  In PostgreSQL, views run with the permissions of the user that created them so they can act as security barriers.
+To be able to collect metrics from `pg_stat_activity` and `pg_stat_replication` as non-superuser you have to create views as a superuser, and assign permissions separately to those.
+In PostgreSQL, views run with the permissions of the user that created them so they can act as security barriers.
 
 ```sql
 CREATE USER postgres_exporter PASSWORD 'password';
