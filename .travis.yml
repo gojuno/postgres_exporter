@@ -1,6 +1,5 @@
 language: go
 sudo: false
-
 matrix:
   include:
     # "1.x" always refers to the latest Go version, inc. the patch release.
@@ -24,14 +23,11 @@ deploy:
   provider: releases
   skip_cleanup: true
   api_key:
-    secure: U/ztEyA8Bn2kE48PL9m5do9VqSRCbh3cAEK8BR2q5BKaPnatbuTIu5W2Tabsbg/IAjj1n7d6yGSb8PrF/ZIYUve+vEI3mtBAis/TK0e/9I+il3UG/UYDO3pSUlwjyNLj/pH6XoPCD6RQyTry9CEW/D+N+PsMPojWcTnH2eCX0n//6UXVN+Y6ElvbWUG3SvwlJiAUX9EjZJKsfOF6JK6R+hR1oWBmVa43L0wlshB4Sn3fvNHqdM3o/exR841vZUkzMtdJaf/l0UBrtBL5hqokLa3/ykar4UjUgzCAlsfZY84JiH2TMkQsBleElX0zsx9ruWxyK8D+KIJh4ty1WKgFqNtGe6YkneQLvu4/6BF88pb/BOFAWtx75+eplD9IWYhyVJaxTbeuUdr2mzODR7srBOiIXZ2Shgcfo00d8XaEvAd74SahgME4zxuvpFGl9kSoajqAoaKf5z5Ny+H+DtruBdvpoPrFi6F8sqppq4ye2LD+z7iKKKf2jwmIiNBnrGxyqSZ2s+rC0Lgl6SBa6eqfsdmDd1ZksDLXsf6PSq7MLc3rZNP9QVk09jFJlj8gPnxk0b7BF8zX5EL1Cf0j0YFNHv4W4JhNod4OtT81knG40CxVdOaT090Vk+nWDwTfZfzap4hhkiECwcfFExIDr5NX9/g7deXlevybGEid9EuKFwU=
+    secure: u9gxHcKiSElyVfnRVKM+h8fI6AT6JXg7Z1gqv2t1TZfPzOo/GrNAXv/lKGPEmVx0pq54izik2+z3uOAAD3jiT8KeC7MU/NxNRQvvnPPgmQrLhU/FPViygPVbG9a9u1tEqKp4VGBYLYeGr0uSyXn+kV3t3Ly0EOdx6ppLVp5XUezE3lJDX2t3HZ0O/fK8rRqu17HJP9trlsgxaEIJb8xvG0vlQ5pTGrssK2qZtEj0XGTqlxBpXL0zPOx+KsIFuz39HLUE6J/IGSGUOyKxJzSv+rPFV+/hLMljCdM+vmJ/olfK2fLTBa1+ZopGS9r1yevsi4+B3+GPClUTM4nqB1YR7FxpWG8K9wMawZQhgHafiPMULyn8CZThV69U+Fpj/jrsaS+hvJqJD6j6jQymsF6NuJWSNZCscySERumAVTFpUhlUmnWQv3FdZ0XVrHO1tXx31ue8dU8JL0eLPEbh1Y/djdPJhD21m6BFp2o4rpb9BT1VrPjevDKSNx9FnUHypfQxmK4gvfA+O0GK++3BfshnRYI0ZwwLwzz9lQIlswdYTuOyOIkjC+2hkUG62P/e7O0qapBjeYgsBAi2N1OJ7dnzP1dGgCVyPXGaveI0KtHpYQpUgCAs4eC/AJwws+io2rzUPVBRTJ1g05e2hRPwDwx1ZT5AFFOeC0r6RO2Xl5JC1Os=
   file_glob: true
   file:
     # The names of the binaries to output, based on the -output template passed to gox.
     - "postgres_exporter_${VERSION}_darwin_amd64"
     - "postgres_exporter_${VERSION}_linux_amd64"
   on:
-    # What to repository to build
     repo: gojuno/postgres_exporter
-    # Only build binaries for tagged commits
-    tags: true
