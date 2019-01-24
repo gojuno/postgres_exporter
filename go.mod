@@ -1,0 +1,31 @@
+module github.com/wrouesnel/postgres_exporter
+
+require (
+	github.com/Sirupsen/logrus v0.0.0-20170822132746-89742aefa4b2
+	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
+	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
+	github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a
+	github.com/blang/semver v3.5.1+incompatible
+	github.com/dsnet/compress v0.0.0-20171208185109-cc9eb1d7ad76
+	github.com/golang/protobuf v0.0.0-20171021043952-1643683e1b54
+	github.com/golang/snappy v0.0.0-20170215233205-553a64147049
+	github.com/lib/pq v0.0.0-20171022192043-b609790bd85e
+	github.com/magefile/mage v0.0.0-20180212162426-81dbe7074be5
+	github.com/matttproud/golang_protobuf_extensions v1.0.1
+	github.com/mholt/archiver v0.0.0-20171012052341-26cf5bb32d07
+	github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae
+	github.com/pierrec/lz4 v0.0.0-20180113151703-ed8d4cc3b461
+	github.com/pierrec/xxHash v0.0.0-20170714082455-a0006b13c722
+	github.com/prometheus/client_golang v0.0.0-20171005112915-5cec1d0429b0
+	github.com/prometheus/client_model v0.0.0-20170216185247-6f3806018612
+	github.com/prometheus/common v0.0.0-20171006141418-1bab55dd05db
+	github.com/prometheus/procfs v0.0.0-20171017214025-a6e9df898b13
+	github.com/sirupsen/logrus v0.0.0-20170822132746-89742aefa4b2
+	github.com/tmthrgd/go-bindata v0.0.0-20171130101503-40f4993ede74
+	github.com/ulikunitz/xz v0.5.4
+	golang.org/x/crypto v0.0.0-20171023145632-2509b142fb2b
+	golang.org/x/sys v0.0.0-20171023175151-a1a1f1746d15
+	gopkg.in/alecthomas/kingpin.v2 v2.2.5
+	gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405
+	gopkg.in/yaml.v2 v2.0.0-20170812160011-eb3733d160e7
+)

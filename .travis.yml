@@ -1,46 +1,37 @@
-sudo: required
-services:
-- docker
 language: go
-go:
-- '1.11'
+sudo: false
+
+matrix:
+  include:
+    # "1.x" always refers to the latest Go version, inc. the patch release.
+    # e.g. "1.x" is 1.11 until 1.11.1 is available.
+    - go: 1.x
+      env: GO111MODULE=on
+
 before_install:
-- go get -v github.com/mattn/goveralls
-- sudo wget -O /usr/local/bin/p2 https://github.com/wrouesnel/p2cli/releases/download/r4/p2
-  && sudo chmod +x /usr/local/bin/p2
-- sudo wget -O /usr/local/bin/docker-compose https://github.com/docker/compose/releases/download/1.9.0-rc4/docker-compose-Linux-x86_64
-  && sudo chmod +x /usr/local/bin/docker-compose
-- sudo apt-get update && sudo apt-get install postgresql-client-common
+  # gox simplifies building for multiple architectures
+  - go get github.com/mitchellh/gox
+
+install:
+  - # skip
+
 script:
-- ./gh-assets-clone.sh
-- go run mage.go -v all
-- "$HOME/gopath/bin/goveralls -coverprofile=cover.out -service=travis-ci"
-- go run mage.go docker
-after_success:
-- docker login -u $DOCKER_USER -p $DOCKER_PASS
-- if [ ! -z "$TRAVIS_TAG" ]; then docker tag wrouesnel/postgres_exporter:latest wrouesnel/postgres_exporter:$TRAVIS_TAG
-  ; docker push wrouesnel/postgres_exporter:$TRAVIS_TAG ; fi
-- if [ "$TRAVIS_BRANCH" == "master" ]; then docker push wrouesnel/postgres_exporter
-  ; fi
-- ./postgres-metrics-get-changes.sh .assets-branch/metriclists
-- if [ "$TRAVIS_BRANCH" == "master" ]; then ./gh-metrics-push.sh ; fi
-env:
-  global:
-  - DOCKER_USER=wrouesnel
-  - secure: f0H5HKL/5f/ZZVGZ7puegWZ6eig0TmruihuSEJCx1+Y6yDZn7l8lH+eETP9KAzH27c3CG1F9ytu/3gnnTOafXnDLlCve3fL5sKF3+pNQRwi3IojsODjdfPW+KEbG+1RD7IgkCn+DSRmvvpLr4zGOmZFEM1ZtLL878u4Hsrv/X5pDbKJgG/cXDRJfsu/EcpviO4WM8zOakBY8QihXhGpZiRtpRDCXWjW49PdCkW9hsfzFaU1yjvih9EJ0cfcH+9CFCRkezwAPlCETbOv288uHXc6bCuEEX1bgJ0ZzEXYAyoO00+12ePbQZEGNikSVT55nfC+jZLLTavQkFi862Hcx/lmJpA/7aeNYOrDcomwWMRRc4Ava2+cod7acVvo45SHRq+Jj9ofDhj9s0T/aZwV+2doc9GwDN9J6aEs9Nham2G955K1H0fmMW9lv0ThSVEZ3XbzCHyR4nPAwJQXrzauqbbihCim/g/YC5gbVs7O/4GkN2Z9LK30IJr1/NtJdIa6fMk3Zdhp6LGbXCvVFRbE0rMiTLbB8O3ll2smCu3aFYv7J9IfvI0ol0ww7kULpyf/vqxkK0NJXsKgoK/Uo1lM9gNpJBHsMt9nWnDvLj2DKZNTqkxzJeG8O98ADrQWEGFhpcsSsbW9pAMsrp6D4LQikN8KoFvh9F8h9lBsYpafzlOA=
-  - GIT_ASSETS_BRANCH=assets
-  - secure: 04rZWNM20asC0CHqgSa9OwU5d0Zl8sTPXdaHwm3mR75xWcoQwLiNpIzQpdrtH21VPqj78CdwBXvt1ZAcl4SZaNxEFbvblSz2CZ/3dAeM3uj+LShn/wMgQGdCALzF1hlpnDOQsFpdY5GqKS28rYF14EZDT4ZGf+uBamwCq9QNPdApypAqQCfJml8TYeUbJfgvTWoVNMfy5eIiWjYAUriXE258UY4z6ErWqs00A3cmLadkjQaDaNowcjTiFA2qRUcJckLZmbo+3mqa0N2DST0uXflvwOMmPJzjVNXkzs6hX7GVrIjfK0ttud0SV6iatuB7LdAYBlNvMrPJHAEchdR/xhfXv0obx/CdWBSo55sWy/DPNGh0BNgdohX/IcGaVX2318ca81+jD4IEJ//0DCVpmfhi+xM7N2Tmpstus6ToBJy2ZWwP9xOuchrSqU5+NPb+xJarRnDclBydQNJpJm+WIZo9nPawggLaDkpoHxppgg3e+f4Mc/bVM5H/v/Qi36Gk2gH4m2ZHDjEJdyHf066L2avKvsIPiW9xobNmUPkCGzDVmCB9vGCn8BNnm3mdHMBcYxaIUOFcSyLi8c0xk9gLvVcDMKn0jDNuegQ5HAfw4zTER4VdRVx4e4iF4NUgj+LmvLXNdJlEAXUu5m4cJDlWfgftMPLTtn3rncq5IgNrVO0=
-branches:
-  except:
-  - assets
+  - go get -t -v ./...
+  - export VERSION=$(git describe --tags)
+  - gox -os="linux darwin" -arch="amd64" -output="postgres_exporter_${VERSION}_{{.OS}}_{{.Arch}}" -verbose ./...
+
 deploy:
-  skip_cleanup: true
   provider: releases
+  skip_cleanup: true
   api_key:
-    secure: rwlge/Rs3wnWyfKRhD9fd5GviVe0foYUp20DY3AjKdDjhtwScA1EeR9QHOkB3raze52en0+KkpqlLCWbt3q4CRT7+ku1DNKhd6VWALdTZ1RPJYvNlU6CKJdRnWUJsECmSBsShXlbiYR8axqNVedzFPFGKzS9gYlFN6rr7pez/JZhxqucopZ6I+TkRHMELrFXyQK7/Y2bNRCLC4a+rGsjKeLLtYXbRXCmS0G4BSJEBRk7d69fIRzBApCMfrcLftgHzPuPth616yyUusQSCQYvaZ5tlwrPP8/E0wG3SVJVeDCMuDOSBZ9M6vNzR8W8VR/hxQamegn1OQgC5kNOaLZCTcJ5xguRouqb+FNFBqrd/Zi6vESo7RiVLULawzwxkh9sIPa3WZYDb3VK/Z/cpggUeR7wAu0S5ZYEvJHRefIZpqofZEHzDE3Blqp5yErz05e/zmjpd6HHK3f/UHmRRYfbulkvGT3aL/dlq5GcFvuxVC/vTL2VPvg9cGbqtf7PakC5IhoHpDs35tOyLxifOBLHvkwtGSxEfsCohIG8Hz2XFD83EsxgOiKSXVPLNd6yxjdqZj7OeAKFFU3bzGndnRbDIXaf987IN1imgUtP6wegfImoRStqxN4gEwwIMFsZCF86Ug4eLhlajLbWhudriDxDPBM/F9950aVxLwmWh9l5cRI=
+    secure: U/ztEyA8Bn2kE48PL9m5do9VqSRCbh3cAEK8BR2q5BKaPnatbuTIu5W2Tabsbg/IAjj1n7d6yGSb8PrF/ZIYUve+vEI3mtBAis/TK0e/9I+il3UG/UYDO3pSUlwjyNLj/pH6XoPCD6RQyTry9CEW/D+N+PsMPojWcTnH2eCX0n//6UXVN+Y6ElvbWUG3SvwlJiAUX9EjZJKsfOF6JK6R+hR1oWBmVa43L0wlshB4Sn3fvNHqdM3o/exR841vZUkzMtdJaf/l0UBrtBL5hqokLa3/ykar4UjUgzCAlsfZY84JiH2TMkQsBleElX0zsx9ruWxyK8D+KIJh4ty1WKgFqNtGe6YkneQLvu4/6BF88pb/BOFAWtx75+eplD9IWYhyVJaxTbeuUdr2mzODR7srBOiIXZ2Shgcfo00d8XaEvAd74SahgME4zxuvpFGl9kSoajqAoaKf5z5Ny+H+DtruBdvpoPrFi6F8sqppq4ye2LD+z7iKKKf2jwmIiNBnrGxyqSZ2s+rC0Lgl6SBa6eqfsdmDd1ZksDLXsf6PSq7MLc3rZNP9QVk09jFJlj8gPnxk0b7BF8zX5EL1Cf0j0YFNHv4W4JhNod4OtT81knG40CxVdOaT090Vk+nWDwTfZfzap4hhkiECwcfFExIDr5NX9/g7deXlevybGEid9EuKFwU=
   file_glob: true
-  file: release/*
+  file:
+    # The names of the binaries to output, based on the -output template passed to gox.
+    - "postgres_exporter_${VERSION}_darwin_amd64"
+    - "postgres_exporter_${VERSION}_linux_amd64"
   on:
+    # What to repository to build
+    repo: gojuno/postgres_exporter
+    # Only build binaries for tagged commits
     tags: true
-    branch: master
-    repo: wrouesnel/postgres_exporter
