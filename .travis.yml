@@ -30,4 +30,7 @@ deploy:
     - "postgres_exporter_${VERSION}_darwin_amd64"
     - "postgres_exporter_${VERSION}_linux_amd64"
   on:
+    # What to repository to build
     repo: gojuno/postgres_exporter
+    # Only build binaries for tagged commits
+    tags: true
